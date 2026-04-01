@@ -29,6 +29,7 @@ import postcssPlugin from 'prettier/plugins/postcss'
 
 const GEMINI_KEY_STORAGE = 'editorial-gemini-key'
 const DARK_MODE_STORAGE = 'editorial-dark-mode'
+const WIN98_MODE_STORAGE = 'editorial-win98-mode'
 const AI_MAX_OUTPUT_TOKENS = 4096
 const AI_EDITORIAL_FORMAT_RULES = [
   'Return ONLY a clean HTML fragment that can be inserted into a rich text editor.',
@@ -56,6 +57,7 @@ const showAlignMenu = ref(false)
 const alignMenuX = ref(0)
 const alignMenuY = ref(0)
 const darkMode = ref(localStorage.getItem(DARK_MODE_STORAGE) === 'true')
+const win98Mode = ref(localStorage.getItem(WIN98_MODE_STORAGE) !== 'false')
 const aiLoading = ref(false)
 const aiError = ref('')
 const showAiPromptBar = ref(false)
@@ -738,6 +740,11 @@ watch(darkMode, (enabled) => {
   document.documentElement.classList.toggle('dark', enabled)
   document.body.classList.toggle('dark', enabled)
   localStorage.setItem(DARK_MODE_STORAGE, enabled ? 'true' : 'false')
+})
+
+watch(win98Mode, (enabled) => {
+  document.body.classList.toggle('win98', enabled)
+  localStorage.setItem(WIN98_MODE_STORAGE, enabled ? 'true' : 'false')
 })
 
 watch(showAiPromptBar, (isOpen) => {
@@ -2159,6 +2166,7 @@ function copyExportText() {
 onMounted(() => {
   document.documentElement.classList.toggle('dark', darkMode.value)
   document.body.classList.toggle('dark', darkMode.value)
+  document.body.classList.toggle('win98', win98Mode.value)
   document.addEventListener('pointerdown', handleDocumentPointerDown)
   window.addEventListener('keydown', handleGlobalKeydown)
   window.addEventListener('wheel', handleGlobalWheel, { passive: true })
@@ -2169,12 +2177,17 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleGlobalKeydown)
   window.removeEventListener('wheel', handleGlobalWheel)
   document.body.classList.remove('dark')
+  document.body.classList.remove('win98')
   editor.value?.destroy()
 })
 </script>
 
 <template>
-  <div ref="uiRoot" class="editor-root min-h-screen bg-slate-200 px-4 py-4 md:px-8 md:py-10 font-body selection:bg-primaryContainer selection:text-onPrimaryContainer">
+  <div
+    ref="uiRoot"
+    class="editor-root min-h-screen bg-slate-200 px-4 py-4 md:px-8 md:py-10 font-body selection:bg-primaryContainer selection:text-onPrimaryContainer"
+    :class="{ 'theme-win98': win98Mode }"
+  >
     <div class="editor-shell mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-outlineVariant/30 bg-surfaceContainerLowest shadow-editorial">
       <header class="editor-header border-b border-outlineVariant/20 bg-surfaceContainerLow px-3 py-2 md:px-4">
         <div class="mb-2 flex items-center justify-between gap-3">
@@ -2187,6 +2200,14 @@ onBeforeUnmount(() => {
               @click="darkMode = !darkMode"
             >
               <span class="material-symbols-outlined icon-md">{{ darkMode ? 'light_mode' : 'dark_mode' }}</span>
+            </button>
+            <button
+              class="top-btn flex items-center justify-center"
+              :title="win98Mode ? 'Disable Win98 theme' : 'Enable Win98 theme'"
+              :aria-label="win98Mode ? 'Disable Win98 theme' : 'Enable Win98 theme'"
+              @click="win98Mode = !win98Mode"
+            >
+              <span class="material-symbols-outlined icon-md">{{ win98Mode ? 'desktop_windows' : 'computer' }}</span>
             </button>
             <div class="relative" data-export-menu>
               <button
@@ -2934,6 +2955,141 @@ onBeforeUnmount(() => {
   @apply relative flex items-center gap-1 rounded-md border border-outlineVariant/30 bg-white/80 px-1.5 py-1;
 }
 
+.theme-win98 {
+  font-family: 'Tahoma', 'Verdana', sans-serif;
+  background: #008080;
+  color: #000;
+}
+
+.theme-win98 .editor-shell {
+  border: 2px solid #000;
+  border-top-color: #fff;
+  border-left-color: #fff;
+  border-right-color: #404040;
+  border-bottom-color: #404040;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 #000;
+  background: #c0c0c0;
+}
+
+.theme-win98 .editor-header,
+.theme-win98 .editor-footer {
+  background: #c0c0c0;
+}
+
+.theme-win98 .editor-header {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #fff;
+}
+
+.theme-win98 .editor-header .text-onSurfaceVariant\/80,
+.theme-win98 .editor-header .text-onSurfaceVariant\/70 {
+  color: #fff;
+}
+
+.theme-win98 .editor-main {
+  background: #ffffff;
+}
+
+.theme-win98 .editor-footer {
+  background: #c0c0c0;
+  color: #000;
+}
+
+.theme-win98 .editor-footer .text-onSurfaceVariant\/70 {
+  color: #000;
+}
+
+.theme-win98 .toolbar-shell,
+.theme-win98 .toolbar-segment,
+.theme-win98 .toolbar-group,
+.theme-win98 .editor-main,
+.theme-win98 .context-menu,
+.theme-win98 .context-side-submenu,
+.theme-win98 .table-popover,
+.theme-win98 .media-popover,
+.theme-win98 .ai-popover,
+.theme-win98 .align-popover,
+.theme-win98 .popover,
+.theme-win98 .ai-command-bar {
+  border-radius: 0;
+  background: #c0c0c0;
+  border-color: #808080;
+}
+
+.theme-win98 .context-menu,
+.theme-win98 .context-side-submenu,
+.theme-win98 .table-popover,
+.theme-win98 .media-popover,
+.theme-win98 .ai-popover,
+.theme-win98 .align-popover,
+.theme-win98 .popover {
+  box-shadow: 2px 2px 0 #000;
+}
+
+.theme-win98 .icon-btn,
+.theme-win98 .top-btn,
+.theme-win98 .share-btn,
+.theme-win98 .menu-item,
+.theme-win98 .context-item,
+.theme-win98 .toolbar-select,
+.theme-win98 .font-size-single,
+.theme-win98 .color-control,
+.theme-win98 .ai-btn,
+.theme-win98 .ai-command-send {
+  border: 1px solid #000;
+  border-top-color: #fff;
+  border-left-color: #fff;
+  border-right-color: #404040;
+  border-bottom-color: #404040;
+  border-radius: 0;
+  background: #c0c0c0;
+  color: #000;
+}
+
+.theme-win98 .icon-btn:active,
+.theme-win98 .top-btn:active,
+.theme-win98 .share-btn:active,
+.theme-win98 .menu-item:active,
+.theme-win98 .context-item:active,
+.theme-win98 .ai-btn:active,
+.theme-win98 .ai-command-send:active {
+  border-top-color: #404040;
+  border-left-color: #404040;
+  border-right-color: #fff;
+  border-bottom-color: #fff;
+}
+
+.theme-win98 .share-btn {
+  font-weight: 700;
+  background: #c0c0c0;
+  color: #000;
+}
+
+.theme-win98 .icon-btn.active {
+  background: #000080;
+  color: #fff;
+}
+
+.theme-win98 .menu-item:hover,
+.theme-win98 .context-item:hover,
+.theme-win98 .icon-btn:hover,
+.theme-win98 .top-btn:hover,
+.theme-win98 .ai-btn:hover {
+  background: #000080;
+  color: #fff;
+}
+
+.theme-win98 .context-title,
+.theme-win98 .context-shortcut {
+  color: #000;
+}
+
+.theme-win98 .signature-pad-wrap {
+  background: #ffffff;
+  border-color: #808080;
+}
+
 .toolbar-lane {
   overflow-x: auto;
   overflow-y: hidden;
@@ -3662,6 +3818,124 @@ onBeforeUnmount(() => {
 :global(.dark .tiptap table td.selectedCell) {
   background-color: rgba(79, 163, 190, 0.2);
   box-shadow: inset 0 0 0 2px rgba(79, 163, 190, 0.6);
+}
+
+:global(.dark .theme-win98) {
+  background: #004040;
+  color: #e6e6e6;
+}
+
+:global(.dark .theme-win98 .editor-shell) {
+  border: 2px solid #000;
+  border-top-color: #dedede;
+  border-left-color: #dedede;
+  border-right-color: #2c2c2c;
+  border-bottom-color: #2c2c2c;
+  background: #1f1f1f;
+  box-shadow: 2px 2px 0 #000;
+}
+
+:global(.dark .theme-win98 .editor-header) {
+  background: linear-gradient(90deg, #000046 0%, #005b8f 100%);
+  color: #fff;
+}
+
+:global(.dark .theme-win98 .editor-main) {
+  background: #171717;
+}
+
+:global(.dark .theme-win98 .editor-footer) {
+  background: #1f1f1f;
+  color: #e6e6e6;
+}
+
+:global(.dark .theme-win98 .editor-header .text-onSurfaceVariant\/80),
+:global(.dark .theme-win98 .editor-header .text-onSurfaceVariant\/70),
+:global(.dark .theme-win98 .editor-footer .text-onSurfaceVariant\/70) {
+  color: #e6e6e6;
+}
+
+:global(.dark .theme-win98 .toolbar-shell),
+:global(.dark .theme-win98 .toolbar-segment),
+:global(.dark .theme-win98 .toolbar-group),
+:global(.dark .theme-win98 .context-menu),
+:global(.dark .theme-win98 .context-side-submenu),
+:global(.dark .theme-win98 .table-popover),
+:global(.dark .theme-win98 .media-popover),
+:global(.dark .theme-win98 .ai-popover),
+:global(.dark .theme-win98 .align-popover),
+:global(.dark .theme-win98 .popover),
+:global(.dark .theme-win98 .ai-command-bar) {
+  border-radius: 0;
+  background: #2b2b2b;
+  border-color: #4f4f4f;
+}
+
+:global(.dark .theme-win98 .icon-btn),
+:global(.dark .theme-win98 .top-btn),
+:global(.dark .theme-win98 .share-btn),
+:global(.dark .theme-win98 .menu-item),
+:global(.dark .theme-win98 .context-item),
+:global(.dark .theme-win98 .toolbar-select),
+:global(.dark .theme-win98 .font-size-single),
+:global(.dark .theme-win98 .color-control),
+:global(.dark .theme-win98 .ai-btn),
+:global(.dark .theme-win98 .ai-command-send),
+:global(.dark .theme-win98 input),
+:global(.dark .theme-win98 textarea) {
+  border: 1px solid #000;
+  border-top-color: #dedede;
+  border-left-color: #dedede;
+  border-right-color: #2c2c2c;
+  border-bottom-color: #2c2c2c;
+  border-radius: 0;
+  background: #2b2b2b;
+  color: #e6e6e6;
+}
+
+:global(.dark .theme-win98 .icon-btn:active),
+:global(.dark .theme-win98 .top-btn:active),
+:global(.dark .theme-win98 .share-btn:active),
+:global(.dark .theme-win98 .menu-item:active),
+:global(.dark .theme-win98 .context-item:active),
+:global(.dark .theme-win98 .ai-btn:active),
+:global(.dark .theme-win98 .ai-command-send:active) {
+  border-top-color: #2c2c2c;
+  border-left-color: #2c2c2c;
+  border-right-color: #dedede;
+  border-bottom-color: #dedede;
+}
+
+:global(.dark .theme-win98 .menu-item:hover),
+:global(.dark .theme-win98 .context-item:hover),
+:global(.dark .theme-win98 .icon-btn:hover),
+:global(.dark .theme-win98 .top-btn:hover),
+:global(.dark .theme-win98 .ai-btn:hover) {
+  background: #000080;
+  color: #fff;
+}
+
+:global(.dark .theme-win98 .context-title),
+:global(.dark .theme-win98 .context-shortcut),
+:global(.dark .theme-win98 .tiptap),
+:global(.dark .theme-win98 .tiptap h1),
+:global(.dark .theme-win98 .tiptap h2),
+:global(.dark .theme-win98 .tiptap h3),
+:global(.dark .theme-win98 .tiptap h4),
+:global(.dark .theme-win98 .tiptap h5),
+:global(.dark .theme-win98 .tiptap h6),
+:global(.dark .theme-win98 .color-icon-text),
+:global(.dark .theme-win98 .color-icon-fill) {
+  color: #e6e6e6;
+}
+
+:global(.dark .theme-win98 .tiptap blockquote) {
+  color: #b4c3cb;
+}
+
+:global(.dark .theme-win98 .tiptap table th),
+:global(.dark .theme-win98 .tiptap table td) {
+  border-color: #5a5a5a;
 }
 
 @media (max-width: 768px) {
